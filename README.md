@@ -14,13 +14,13 @@ npm install plus-toast
 import {showToast} from 'plus-toast';
 
 //使用方式
-showToast({
+showToast(
     "XXXX",//为传入的文本消息或这可以是html标签元素
     {
         duration: 3000, // 显示时长，单位毫秒，没有写时默认3000
         type: '', //success, error, warning, info
-    }// ... 其他选项
-});
+    }
+);
 ...
 ```
 

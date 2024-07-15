@@ -2,7 +2,7 @@ function PlusToast(options) {
     this.options = {
         message: '', // 消息内容
         duration: 3000, // 显示时长，单位毫秒
-        type: '', // 自定义类名
+        type: '', // 自定义显示类目，success，error，warning，info
         ...options,
     };
     this.init();
