@@ -1,28 +1,25 @@
-function PlusToast(options) {
-    this.options = {
-        message: "",
-        duration: 3000,
-        icon: "",//内置提供success，error，warning，info四个，也可以自定义图标，直接传入icon图标的svg或img
-        theme: "light",// 设置主题黑暗/成功等显示背景：dark，success，error，warning，info，默认为light，light只是表明初始的样式是明亮主题
-        closable: false,
-        position: "top",
-        animation: "slide", // 动画效果：'slide', 'fade',  'bounce'
-        ...options,
-    };
-    this.init();
-}
+class PlusToast {
+    constructor(options = {}) {
+        this.options = {
+            message: "",//文本消息或html代码
+            duration: 4000,//表示显示时长，多久后关闭
+            icon: "",//内置提供success，error，warning，info四个，也可以自定义图标，直接传入icon图标的svg或img
+            type: "light",// 设置黑暗/成功等显示类型：dark，success，error，warning，info，默认为light，light只是表明初始的样式是明亮主题
+            closable: false,//是否可关闭，默认为false，为true时会出现一个关闭的X按钮，必须点击才能关闭，否则就是正常的依据显示时长后关闭
+            position: "top",//表示显示位置，top，top-right,top-left,right,left,bottom,bottom-right,bottom-left,center
+            animation: "slide", // 动画效果：'slide', 'fade',  'bounce'
+            onlyOne: false,//是否只显示一次，多次点击只显示一次
+            confirmMode: false,//是否为确认模式，确认模式可以和用户交互，会在消息下面显示确认和取消按钮
+            ...options
+        };
+        // 使用 Object.assign 合并默认参数和传入参数
+        // this.options = Object.assign({}, defaultOptions, options);
+        this.initStyles();
+    }
 
-PlusToast.prototype = {
-    constructor: PlusToast,
-    init: function () {
-        this.createToast();
-        this.show();
-        if (!this.options.closable) {
-            this.hideAfter(this.options.duration);
-        }
-    },
-    createToast: function () {
-        // 创建样式表
+    initStyles() {
+        if (document.getElementById("plus-toast-styles")) return; // 避免重复添加样式
+
         const css = `
                 /* 定义淡出动画 */
                 @keyframes fadeOut {
@@ -88,9 +85,9 @@ PlusToast.prototype = {
                         opacity:0;
                         transform:translateY(-100%);
                     }
-                    25% {
-                        opacity:0.25;
-                        transform:translateY(-75%);
+                    60% {
+                        opacity:0.6;
+                        transform:translateY(-40%);
                     }
                     100% {
                         opacity:1;
@@ -152,7 +149,7 @@ PlusToast.prototype = {
                     flex-direction: column;
                 }
                 .plus-toast {
-                    padding: 10px 20px;
+                    padding: 10px 15px;
                     background-color: rgba(256, 256, 256);
                     color: #000;
                     width: auto;
@@ -161,24 +158,58 @@ PlusToast.prototype = {
                     /* 让消息内部的三个元素（图标、文本、关闭按钮）可以垂直水平居中 */
                     display: flex;
                     align-items: center;
+                    flex-direction: column;
+                    flex-wrap: nowrap;
+                    justify-content: center;
                     /* 增加一个过渡属性，当message元素的高度和margin变化时候将会有一个过渡动画 */
-                    transition: height 0.2s ease-in-out, margin 0.2s ease-in-out;
-                    /*transition: opacity 0.3s ease, transform 0.3s ease; */
+                    /*transition: height 0.2s ease-in-out, margin 0.2s ease-in-out;
+                    transition: opacity 0.3s ease, transform 0.3s ease; */
+                }
+                .plus-toast .toast-main {
+                    display: flex;
+                    align-items: center;
+                }
+                .plus-toast .confirm-button-container {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center; /* 将按钮排列在中间 */
+                    flex-wrap: nowrap;
+                    align-items: center;
+                    margin-top: 5px; /* 添加顶部间距 */
+                }
+
+                .plus-toast button {
+                    background-color: transparent; /* 透明背景 */
+                    border: none; /* 无边框 */
+                    padding: 8px 16px; /* 内边距 */
+                    font-size: 16px;
+                    cursor: pointer;
+                    border-radius: 4px; /* 圆角 */
+                    margin: 0 7px; /* 按钮之间的间距 */
+                }
+
+                .plus-toast .confirm-button {
+                    color: #409eff; /* 清新的蓝色 */
+                }
+
+                .plus-toast .cancel-button {
+                    color: #606266; /* 浅灰色 */
                 }
                 .plus-toast.success {
-                    background-color: #4CAF50;
-                    color: #fff;
+                    background-color: #F0F9EB;
+                    color: #67C23A;
                 }
                 .plus-toast.error {
-                    background-color: #F44336;
-                    color: #fff;
+                    background-color: #FEF0EF;
+                    color: #ed5455;
                 }
                 .plus-toast.warning {
-                    background-color: #FFC107;
+                    background-color: #faf5ed;
+                    color: #df9928;
                 }
                 .plus-toast.info {
-                    background-color: #2196F3;
-                    color: #fff;
+                    background-color: #d0dded;
+                    color: #3377d7;
                 }
                 .plus-toast.dark {
                     background-color: rgba(0, 0, 0, 0.8);
@@ -190,9 +221,11 @@ PlusToast.prototype = {
                     place-items: center;
                 }
                 .plus-toast-close {
-                    margin-left: 10px;
+                    margin-left: 5px;
                     padding:0 5px;
                     cursor: pointer;
+                    align-self: flex-start;
+                    font-size: 1.5rem;
                 }
                 .plus-toast-container.top {
                     top: 20px;
@@ -241,10 +274,10 @@ PlusToast.prototype = {
                 }
                 /* 应用淡入动画 */
                 .plus-toast.fade-in {
-                    animation: fadeIn .3s ease-in-out;
+                    animation: fadeIn .3s ease-in-out forwards;
                 }
                 .plus-toast.bounce-in {
-                    animation: bounce-in .3s ease-in-out;
+                    animation: bounce-in .3s ease-in-out forwards;
                 }
                 .plus-toast.bounce-out {
                     animation: bounce-out .3s ease-in-out forwards;
@@ -252,18 +285,22 @@ PlusToast.prototype = {
                     animation-fill-mode: forwards; */
                 }
                 .plus-toast.slide-in {
-                    animation: slide-in .3s ease-in-out;
+                    animation: slide-in .3s ease-in-out forwards;
                 }
                 .plus-toast.slide-out {
                     animation: slide-out .3s ease-in-out forwards;
                     /* 让动画结束后保持结束状态
                     animation-fill-mode: forwards; */
                 }
-                `;
-        const $style = document.createElement("style");
-        $style.setAttribute("type", "text/css");
-        $style.textContent = css;
-        document.head.appendChild($style);
+            `;
+
+        const style = document.createElement("style");
+        style.id = "plus-toast-styles";
+        style.textContent = css;
+        document.head.appendChild(style);
+    }
+    //创建相关的显示元素
+    createToast(message) {
 
         const containerEle = "plus-toast-container";
         this.toastContainer = document.getElementsByClassName(containerEle)[0];
@@ -276,16 +313,31 @@ PlusToast.prototype = {
             // 添加到页面
             document.body.appendChild(this.toastContainer);
         }
+        const toastEle="plus-toast";
+        const toastEles= this.toastContainer.getElementsByClassName(toastEle);
+        // 如果当前有消息框显示，并且是可关闭的，直接返回
+        // 增加一个判断，如果当前已经有 toast 正在显示，则不创建新的 toast !this.toast.classList.contains(this.options.animation + "-out")
+        if (this.options.onlyOne && toastEles.length > 0) {
+            return;
+        }
         // 创建 toast 元素
         this.toast = document.createElement("div");
         this.toast.classList.add(
-            "plus-toast",
-            this.options.theme
+            toastEle,
+            this.options.type
         );
         // if(this.options.theme === "dark"){
         //     this.toast.style.cssText +=``;
         // }
         this.toastContainer.appendChild(this.toast);
+
+        // 创建 toastMain 元素
+        this.toastMain = document.createElement("div");
+        this.toastMain.classList.add(
+            "toast-main"
+        );
+        //添加toast消息主体main
+        this.toast.appendChild(this.toastMain);
 
         // 添加图标
         const iconMap = {
@@ -303,47 +355,162 @@ PlusToast.prototype = {
             if (/<[^>]+>/g.test(this.options.icon)) {
                 icon.innerHTML = this.options.icon;
             }
-            this.toast.appendChild(icon);
+            this.toastMain.appendChild(icon);
         }
 
         // 添加消息内容
         const messageContent = document.createElement("span");
-        messageContent.textContent = this.options.message;
-        if ((/<[^>]+>/g.test(this.options.message))) {
-            messageContent.innerHTML = this.options.message;
+        messageContent.textContent = message;
+        if ((/<[^>]+>/g.test(message))) {
+            messageContent.innerHTML = message;
         }
-        this.toast.appendChild(messageContent);
+        this.toastMain.appendChild(messageContent);
 
         // 添加关闭按钮
-        if (this.options.closable) {
+        if(this.options.closable){
             const closeButton = document.createElement("span");
             closeButton.classList.add("plus-toast-close");
             closeButton.textContent = "×";
-            closeButton.addEventListener("click", this.hide.bind(this));
-            this.toast.appendChild(closeButton);
+            closeButton.addEventListener("click", this.hideToast.bind(this,this.toast));
+            this.toastMain.appendChild(closeButton);
         }
-    },
-    show: function () {
-        // 使用 setTimeout 来触发 transition 效果
+
+        // 添加确认和取消按钮
+        if (this.options.confirmMode) {
+            const buttonContainer = document.createElement("div");
+            buttonContainer.classList.add("confirm-button-container"); // 添加类名
+    
+            const cancelButton = document.createElement("button");
+            cancelButton.classList.add("cancel-button"); // 添加类名
+            cancelButton.textContent = this.options.cancelText || "取消";
+            cancelButton.addEventListener("click", () => {
+              this.hideToast(this.toast);
+              if (typeof this.options.onCancel === "function") {
+                this.options.onCancel();
+              }
+            });
+            buttonContainer.appendChild(cancelButton);
+
+            const confirmButton = document.createElement("button");
+            confirmButton.classList.add("confirm-button"); // 添加类名
+            confirmButton.textContent = this.options.confirmText || "确认";
+            confirmButton.addEventListener("click", () => {
+              this.hideToast(this.toast);
+              if (typeof this.options.onConfirm === "function") {
+                this.options.onConfirm();
+              }
+            });
+            buttonContainer.appendChild(confirmButton);
+  
+            this.toast.appendChild(buttonContainer);
+        }
+    }
+    showToast() {
+        // 使用 setTimeout 来触发 animation 效果
         setTimeout(() => {
             this.toast.classList.add(this.options.animation + "-in");
         }, 0);
-    },
-    hide: function () {
-        this.toast.classList.remove(this.options.animation + "-in");
-        this.toast.classList.add(this.options.animation + "-out");
+    }
+    hideToast(plusToast) {
+        plusToast.classList.remove(this.options.animation + "-in");
+        plusToast.classList.add(this.options.animation + "-out");
         // 在 animationend 结束后移除元素
-        this.toast.addEventListener("animationend", () => {
-            this.toast.remove();
+        plusToast.addEventListener("animationend", () => {
+            plusToast.remove();
         });
-    },
-    hideAfter: function (delay) {
+
+        // 这个地方是监听transition的过渡动画结束事件，在动画结束后把消息从dom树中移除。
+        plusToast.addEventListener('transitionend', () => {
+            // Element对象内部有一个remove方法，调用之后可以将该元素从dom树种移除！
+            plusToast.remove();
+        });
+    }
+    hideToastAfter(delay, plusToast) {
+        // 设置定时器
         setTimeout(() => {
-            this.hide();
+            this.hideToast(plusToast);
         }, delay);
-    },
-};
-// 导出 showToast 方法
-export function showToast(message, options) {
-    new PlusToast({ message, ...options });
+    }
+    //通用显示方法
+    show(message, options = {}) {
+        // 合并options，将传入的options覆盖到this.options上
+        this.options = options ? { ...this.options, ...options } : {...this.options};
+        this.createToast(message);
+        this.showToast();
+        if (!this.options.closable || this.options.duration > 0) {
+            this.hideToastAfter(this.options.duration, this.toast);
+        }
+    }
+    //成功特定显示
+    success(message, options = {}) {
+        this.options = options 
+        ? { ...this.options, type: "success", icon: "success", ...options, } 
+        : { ...this.options, type: "success", icon: "success" };
+        this.createToast(message);
+        this.showToast();
+        if (!this.options.closable || this.options.duration > 0) {
+            this.hideToastAfter(this.options.duration, this.toast);
+        }
+    }
+    //失败或错误特定显示
+    error(message, options = {}) {
+        this.options = options 
+        ? { ...this.options, type: "error", icon: "error", ...options, } 
+        : { ...this.options, type: "error", icon: "error" };
+        this.createToast(message);
+        this.showToast();
+        if (!this.options.closable || this.options.duration > 0) {
+            this.hideToastAfter(this.options.duration, this.toast);
+        }
+    }
+    //警告特定显示
+    warning(message, options = {}) {
+        this.options = options 
+        ? { ...this.options, type: "warning", icon: "warning", ...options, } 
+        : { ...this.options, type: "warning", icon: "warning" };
+        this.createToast(message);
+        this.showToast();
+        if (!this.options.closable || this.options.duration > 0) {
+            this.hideToastAfter(this.options.duration, this.toast);
+        }
+    }
+    //消息特定显示
+    info(message, options = {}) {
+        this.options = options 
+        ? { ...this.options, type: "info", icon: "info", ...options, } 
+        : { ...this.options, type: "info", icon: "info" };
+        this.createToast(message);
+        this.showToast();
+        if (!this.options.closable || this.options.duration > 0) {
+            this.hideToastAfter(this.options.duration, this.toast);
+        }
+    }
+    //注册or登记特定显示方法
+    register(message, options = {}) {
+        // 合并options，将传入的options覆盖到this.options上
+        this.options = { ...this.options, closable: true, onlyOne: true, ...options };
+        this.createToast(message);
+        this.showToast();
+    }
+    //登录特定显示方法
+    login(message, options = {}) {
+        // 合并options，将传入的options覆盖到this.options上
+        this.options = options ? { ...this.options, closable: true, onlyOne: true, ...options } : {...this.options, closable: "true", onlyOne: true};
+        this.createToast(message);
+        this.showToast();
+    }
+    // 确认取消模式
+    confirm(message, options = {}) {
+        // 合并 options
+        this.options = {
+            ...this.options,
+            onlyOne: true,
+            confirmMode: true,
+            ...options
+        };
+        this.createToast(message);
+        this.showToast();
+    }
 }
+// 导出 PlusToast 实例，而不是类本身
+export default new PlusToast();
