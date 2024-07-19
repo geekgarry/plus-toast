@@ -308,7 +308,7 @@ class PlusToast {
             this.toastContainer = document.createElement("div");
             this.toastContainer.classList.add(
                 containerEle,
-                this.options.position
+                this.currentOptions.position
             );
             // 添加到页面
             document.body.appendChild(this.toastContainer);
@@ -316,17 +316,17 @@ class PlusToast {
         const toastEle="plus-toast";
         const toastEles= this.toastContainer.getElementsByClassName(toastEle);
         // 如果当前有消息框显示，并且是可关闭的，直接返回
-        // 增加一个判断，如果当前已经有 toast 正在显示，则不创建新的 toast !this.toast.classList.contains(this.options.animation + "-out")
-        if (this.options.onlyOne && toastEles.length > 0) {
+        // 增加一个判断，如果当前已经有 toast 正在显示，则不创建新的 toast !this.toast.classList.contains(this.currentOptions.animation + "-out")
+        if (this.currentOptions.onlyOne && toastEles.length > 0) {
             return;
         }
         // 创建 toast 元素
         this.toast = document.createElement("div");
         this.toast.classList.add(
             toastEle,
-            this.options.type
+            this.currentOptions.type
         );
-        // if(this.options.theme === "dark"){
+        // if(this.currentOptions.theme === "dark"){
         //     this.toast.style.cssText +=``;
         // }
         this.toastContainer.appendChild(this.toast);
@@ -348,12 +348,12 @@ class PlusToast {
         };
 
         //添加消息图标
-        if (this.options.icon) {
+        if (this.currentOptions.icon) {
             const icon = document.createElement("span");
             icon.classList.add("plus-toast-icon");
-            icon.innerHTML = iconMap[this.options.icon];
-            if (/<[^>]+>/g.test(this.options.icon)) {
-                icon.innerHTML = this.options.icon;
+            icon.innerHTML = iconMap[this.currentOptions.icon];
+            if (/<[^>]+>/g.test(this.currentOptions.icon)) {
+                icon.innerHTML = this.currentOptions.icon;
             }
             this.toastMain.appendChild(icon);
         }
@@ -367,7 +367,7 @@ class PlusToast {
         this.toastMain.appendChild(messageContent);
 
         // 添加关闭按钮
-        if(this.options.closable){
+        if(this.currentOptions.closable){
             const closeButton = document.createElement("span");
             closeButton.classList.add("plus-toast-close");
             closeButton.textContent = "×";
@@ -376,28 +376,28 @@ class PlusToast {
         }
 
         // 添加确认和取消按钮
-        if (this.options.confirmMode) {
+        if (this.currentOptions.confirmMode) {
             const buttonContainer = document.createElement("div");
             buttonContainer.classList.add("confirm-button-container"); // 添加类名
     
             const cancelButton = document.createElement("button");
             cancelButton.classList.add("cancel-button"); // 添加类名
-            cancelButton.textContent = this.options.cancelText || "取消";
+            cancelButton.textContent = this.currentOptions.cancelText || "取消";
             cancelButton.addEventListener("click", () => {
               this.hideToast(this.toast);
-              if (typeof this.options.onCancel === "function") {
-                this.options.onCancel();
+              if (typeof this.currentOptions.onCancel === "function") {
+                this.currentOptions.onCancel();
               }
             });
             buttonContainer.appendChild(cancelButton);
 
             const confirmButton = document.createElement("button");
             confirmButton.classList.add("confirm-button"); // 添加类名
-            confirmButton.textContent = this.options.confirmText || "确认";
+            confirmButton.textContent = this.currentOptions.confirmText || "确认";
             confirmButton.addEventListener("click", () => {
               this.hideToast(this.toast);
-              if (typeof this.options.onConfirm === "function") {
-                this.options.onConfirm();
+              if (typeof this.currentOptions.onConfirm === "function") {
+                this.currentOptions.onConfirm();
               }
             });
             buttonContainer.appendChild(confirmButton);
@@ -408,12 +408,12 @@ class PlusToast {
     showToast() {
         // 使用 setTimeout 来触发 animation 效果
         setTimeout(() => {
-            this.toast.classList.add(this.options.animation + "-in");
+            this.toast.classList.add(this.currentOptions.animation + "-in");
         }, 0);
     }
     hideToast(plusToast) {
-        plusToast.classList.remove(this.options.animation + "-in");
-        plusToast.classList.add(this.options.animation + "-out");
+        plusToast.classList.remove(this.currentOptions.animation + "-in");
+        plusToast.classList.add(this.currentOptions.animation + "-out");
         // 在 animationend 结束后移除元素
         plusToast.addEventListener("animationend", () => {
             plusToast.remove();
@@ -433,76 +433,68 @@ class PlusToast {
     }
     //通用显示方法
     show(message, options = {}) {
-        // 合并options，将传入的options覆盖到this.options上
-        this.options = options ? { ...this.options, ...options } : {...this.options};
+        // 合并options，将传入的options覆盖到this.currentOptions上
+        this.currentOptions = { ...this.options, ...options };
         this.createToast(message);
         this.showToast();
-        if (!this.options.closable || this.options.duration > 0) {
-            this.hideToastAfter(this.options.duration, this.toast);
+        if (!this.currentOptions.closable || this.currentOptions.duration > 0) {
+            this.hideToastAfter(this.currentOptions.duration, this.toast);
         }
     }
     //成功特定显示
     success(message, options = {}) {
-        this.options = options 
-        ? { ...this.options, type: "success", icon: "success", ...options, } 
-        : { ...this.options, type: "success", icon: "success" };
+        this.currentOptions = { ...this.options, type: "success", icon: "success", ...options };
         this.createToast(message);
         this.showToast();
-        if (!this.options.closable || this.options.duration > 0) {
-            this.hideToastAfter(this.options.duration, this.toast);
+        if (!this.currentOptions.closable || this.currentOptions.duration > 0) {
+            this.hideToastAfter(this.currentOptions.duration, this.toast);
         }
     }
     //失败或错误特定显示
     error(message, options = {}) {
-        this.options = options 
-        ? { ...this.options, type: "error", icon: "error", ...options, } 
-        : { ...this.options, type: "error", icon: "error" };
+        this.currentOptions = { ...this.options, type: "error", icon: "error", ...options };
         this.createToast(message);
         this.showToast();
-        if (!this.options.closable || this.options.duration > 0) {
-            this.hideToastAfter(this.options.duration, this.toast);
+        if (!this.currentOptions.closable || this.currentOptions.duration > 0) {
+            this.hideToastAfter(this.currentOptions.duration, this.toast);
         }
     }
     //警告特定显示
     warning(message, options = {}) {
-        this.options = options 
-        ? { ...this.options, type: "warning", icon: "warning", ...options, } 
-        : { ...this.options, type: "warning", icon: "warning" };
+        this.currentOptions = { ...this.options, type: "warning", icon: "warning", ...options };
         this.createToast(message);
         this.showToast();
-        if (!this.options.closable || this.options.duration > 0) {
-            this.hideToastAfter(this.options.duration, this.toast);
+        if (!this.currentOptions.closable || this.currentOptions.duration > 0) {
+            this.hideToastAfter(this.currentOptions.duration, this.toast);
         }
     }
     //消息特定显示
     info(message, options = {}) {
-        this.options = options 
-        ? { ...this.options, type: "info", icon: "info", ...options, } 
-        : { ...this.options, type: "info", icon: "info" };
+        this.currentOptions = { ...this.options, type: "info", icon: "info", ...options, };
         this.createToast(message);
         this.showToast();
-        if (!this.options.closable || this.options.duration > 0) {
-            this.hideToastAfter(this.options.duration, this.toast);
+        if (!this.currentOptions.closable || this.currentOptions.duration > 0) {
+            this.hideToastAfter(this.currentOptions.duration, this.toast);
         }
     }
     //注册or登记特定显示方法
     register(message, options = {}) {
         // 合并options，将传入的options覆盖到this.options上
-        this.options = { ...this.options, closable: true, onlyOne: true, ...options };
+        this.currentOptions = { ...this.options, closable: true, onlyOne: true, ...options };
         this.createToast(message);
         this.showToast();
     }
     //登录特定显示方法
     login(message, options = {}) {
         // 合并options，将传入的options覆盖到this.options上
-        this.options = options ? { ...this.options, closable: true, onlyOne: true, ...options } : {...this.options, closable: "true", onlyOne: true};
+        this.currentOptions = { ...this.options, closable: true, onlyOne: true, ...options };
         this.createToast(message);
         this.showToast();
     }
     // 确认取消模式
     confirm(message, options = {}) {
         // 合并 options
-        this.options = {
+        this.currentOptions = {
             ...this.options,
             onlyOne: true,
             confirmMode: true,
