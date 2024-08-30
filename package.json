@@ -1,6 +1,6 @@
 {
   "name": "plus-toast",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "这是一个轻量级的toast消息提示插件，帮你更好的使用消息提示和进行用户交互，各种类型消息，包括警告，错误，信息提示，确认等。还可以自定义html或者纯文本消息显示！",
   "main": "index.js",
   "scripts": {

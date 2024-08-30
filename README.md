@@ -17,7 +17,8 @@ import PlusToast from 'plus-toast';
 {
     duration: 4000,//表示显示时长，多久后关闭
     icon: "",//内置提供success，error，warning，info四个，也可以自定义图标，直接传入icon图标的svg或img
-    type: "light",// 设置黑暗/成功等显示类型：dark，success，error，warning，info，默认为light，light只是表明初始的样式是明亮主题
+    type: "",// 表示消息显示类型：success，error，warning，info
+    theme: "", //主体样式，light，dark，bubble主题样式
     closable: false,//是否可关闭，默认为false，为true时会出现一个关闭的X按钮，必须点击才能关闭，否则就是正常的依据显示时长后关闭
     position: "top",//表示显示位置，top，top-right,top-left,right,left,bottom,bottom-right,bottom-left,center
     animation: "slide", // 动画效果：'slide', 'fade',  'bounce'
@@ -51,8 +52,28 @@ PlusToast.warning(
     "message"//为传入的文本消息或这可以是一段html代码
 );
 
-// ingo方法，常用的参数
+// info方法，常用的参数
 PlusToast.info(
+    "message"//为传入的文本消息或这可以是一段html代码
+);
+
+// successM方法，移动端，常用的参数
+PlusToast.successM(
+    "message"//为传入的文本消息或这可以是一段html代码
+);
+
+// errorM方法，移动端，常用的参数
+PlusToast.errorM(
+    "message"//为传入的文本消息或这可以是一段html代码
+);
+
+// warningM方法，移动端，常用的参数
+PlusToast.warningM(
+    "message"//为传入的文本消息或这可以是一段html代码
+);
+
+// infoM方法，移动端，常用的参数
+PlusToast.infoM(
     "message"//为传入的文本消息或这可以是一段html代码
 );
 
